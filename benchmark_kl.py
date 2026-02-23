@@ -1,4 +1,4 @@
-from nmf import NMFProblemKLInstance, NMFProblemFroInstance
+from nmf import NMFProblemKLInstance
 import numpy as np
 import scipy
 from scipy.optimize import minimize, Bounds
@@ -688,30 +688,24 @@ if _HAS_CYIPOPT:
         )
     )
 
-# --- 3. SETUP SYNTHETIC DATA ---
+# --- 3. SETUP SYNTHETIC DATA (KL divergence) ---
+# Z = X̂Ŷ + 0.01Ẑ, where X̂ ∈ R^{m×r}, Ŷ ∈ R^{r×n}, Ẑ ∈ R^{m×n},
+# entries i.i.d. from U[0,1].
 m, n, r = 100, 20, 10
 print(f"Creating a synthetic problem of size Z=({m}x{n}) with rank r={r}\n")
-X_true = np.random.rand(m, r)
-Y_true = np.random.rand(r, n)
-Z_data = np.abs(X_true @ Y_true + 0.01 * (np.random.rand(m, n) - 0.5))
-seed = 42
 
+np.random.seed(0)
+X_hat = np.random.rand(m, r)
+Y_hat = np.random.rand(r, n)
+Z_hat = np.random.rand(m, n)
+Z_data = X_hat @ Y_hat + 0.01 * Z_hat
+
+seed = 42
 problem_kl = NMFProblemKLInstance(Z_data, r, seed=seed)
 experiment_kl = NMFExperimentRunner(problem_kl)
 
 for opt in optimizers_to_run:
     experiment_kl.add_optimizer(opt)
-    
+
 experiment_kl.run_all()
 experiment_kl.plot_results()
-
-problem_fro = NMFProblemFroInstance(Z_data, r, seed=seed)
-experiment_fro = NMFExperimentRunner(problem_fro)
-
-for opt in optimizers_to_run:
-    experiment_fro.add_optimizer(opt)
-
-experiment_fro.run_all()
-experiment_fro.plot_results()
-
-
