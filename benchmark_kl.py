@@ -644,7 +644,7 @@ optimizers_to_run = [
         options=common_options
     ),
     CustomARAOptimizer(
-        name="ARA",
+        name="ARM",
         options={**common_options, 'kappa': 1.0, 'ell': 1.0}
     ),
     CustomCOCARCOptimizer(
